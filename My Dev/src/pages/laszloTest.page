@@ -1,0 +1,44 @@
+<apex:page controller="doController" >
+
+<script>
+	var laszloApp;
+	var accountName;
+	
+	function getMyApp(appName) {
+    if (navigator.appName.indexOf("Microsoft") != -1) {
+      return window[appName];
+    } else {
+      return document[appName];
+    }
+  }
+	
+	
+    function changeDocumentTitle() {
+        laszloApp = getMyApp("helloserver");
+        laszloApp.moreTest(accountName);
+    }
+
+  
+</script>
+
+<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+id="FlexTree" width="282" height="421"
+codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+  <param name="movie" value="{!$Resource.helloserver}" />
+  <param name="quality" value="high" />
+  <param name="bgcolor" value="#869ca7" />
+  <param name="allowScriptAccess" value="sameDomain" />
+  <embed src="{!$Resource.helloserver}" quality="high" bgcolor="#869ca7"
+    width="282" height="421" name="helloserver" align="middle"
+    play="true"
+    loop="false"
+    quality="high"
+    allowScriptAccess="sameDomain"
+    type="application/x-shockwave-flash"
+    pluginspage="http://www.adobe.com/go/getflashplayer"
+    id="helloserver">
+  </embed>
+</object>
+<script>accountName = "{!account.Name}"</script>
+
+</apex:page>

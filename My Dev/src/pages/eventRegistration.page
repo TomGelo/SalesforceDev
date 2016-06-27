@@ -1,0 +1,41 @@
+<apex:page standardController="Contact" sidebar="false" showheader="false" extensions="eventRegistrationController" title="Verteo Biopharma Event Registration">
+    <apex:sectionHeader title="Event Registration"/>
+        <apex:form >
+            <apex:pageMessages id="messages"/>
+                <apex:pageBlock >
+                    <apex:pageBlockButtons location="bottom">
+                         <apex:commandButton action="{!submit}" value="Submit"/>
+                    </apex:pageBlockButtons>    
+                    
+                    <apex:pageBlockSection columns="1" title="Contact Information">
+                        <apex:inputField value="{!Contact.FirstName}"/>
+                        <apex:inputField value="{!Contact.LastName}"/>
+                        <apex:inputField value="{!Contact.Email}" required="true"/>
+                        <apex:repeat value="{!$ObjectType.Contact.FieldSets.ContactAddress}" var="field">
+                            <apex:inputField value="{!Contact[field]}" />
+                        </apex:repeat>
+                    </apex:pageBlockSection>
+                    
+                    <apex:pageBlockSection columns="1" title="Event Selection">
+                        <apex:pageBlockSectionItem >
+                            <apex:outputLabel value="Available Events" for="eventsList"/>
+                             <apex:actionRegion >
+                                <apex:selectList value="{!eventId}" id="eventsList" multiselect="false" size="1">
+                                    <apex:selectOptions value="{!eventDates}"/>
+                                       <apex:actionSupport event="onchange" reRender="sessionList" immediate="false"/>
+                                </apex:selectList>
+                             </apex:actionRegion>
+                        </apex:pageBlockSectionItem>
+                            
+                        <apex:pageBlockSectionItem >
+                            
+                            <apex:outputLabel value="Available Sessions" for="sessionList" />
+                            <apex:selectList value="{!sessionId}" id="sessionList" multiselect="true" size="3" style="width:300px;">
+                                <apex:selectOptions value="{!sessionOptions}"/>
+                            </apex:selectList>
+                            
+                        </apex:pageBlockSectionItem>                        
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+        </apex:form>
+</apex:page>

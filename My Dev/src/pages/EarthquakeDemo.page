@@ -1,0 +1,252 @@
+<apex:page showHeader="false" Controller="EarthquakeController" standardStylesheets="false" docType="html-5.0">
+	<head>
+
+		<title>Earthquake Information Utility</title>
+
+		<apex:stylesheet value="//cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.2/paper/bootstrap.css"/>
+		<apex:stylesheet value="{!URLFOR($Resource.earthquakeStyle)}"/>
+		<apex:includeScript value="{!URLFOR($Resource.mapStyle)}"/>
+	
+		<apex:includeScript value="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"/>
+		<apex:includeScript value="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"/>
+		
+		<apex:includeScript value="//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"/>
+		<apex:includeScript value="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"/>
+
+
+		<meta charset="utf-8"/>
+    	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+
+    	<script type="text/javascript">
+        	j$ = jQuery.noConflict();
+        	var markers = [];
+        	var map;
+
+
+        	/*On DOM ready setup geocoder and search event listeners.  Call loadAllQuakes() JS function*/
+        	j$(document).ready(function() {
+
+        		j$( "#searchBar" ).submit(function( event ) {
+				  event.preventDefault();
+				});
+
+				document.addEventListener('touchmove', function(etv) {
+    				evt.preventDefault();
+				});
+
+				j$('#infoModal').on('show.bs.modal', function (e) {
+					j$('.modal-backdrop').css({bottom: 0});
+				})
+
+				j$("#map-canvas").height(j$( window ).height()-65);
+        		console.log(getMapStyle());
+
+        		//Create maps geocoder with options
+        		geocoder = new google.maps.Geocoder();
+			    var strBounds;
+			    var latlng = new google.maps.LatLng(37.265310, -99.316406);
+			    var mapOptions = {
+			        zoom: 5,
+			        center: latlng,
+			        styles: getMapStyle(),
+			        disableDefaultUI: true
+			    }
+			    //Bind to map div
+			    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+			    var input = /** @type {HTMLInputElement} */(
+			      document.getElementById('address'));
+
+			  	var options = {
+				  types: ['geocode']
+				};
+			  	
+			  	//Load autocomplete with input and options
+			  	var autocomplete = new google.maps.places.Autocomplete(input, options);
+			  	
+			  	//Bind autocomplete with map
+			  	autocomplete.bindTo('bounds', map);
+
+			  	/*Autocomplete listener function centers map on selected location, calls controller findQuakes() method,
+			  	  plots returned results, and binds data results to infoWindow()*/
+			  	google.maps.event.addListener(autocomplete, 'place_changed', function() {
+				   
+				   	//check for valid location selection
+					var place = autocomplete.getPlace();
+					    
+					if (!place.geometry) {
+					     return;
+					}
+
+					//clear previous markers, center map on location, get new map bounds
+					if (place.geometry.viewport) {
+						j$(".navbar-toggle").click();
+						clearMarkers();
+	      				map.fitBounds(place.geometry.viewport);
+	      				map.setZoom(11);
+	      				strBounds = map.getBounds().toUrlValue(6);
+	    			}
+
+	    			//Pass bounds to controller findQuakes() method, check for data, loop through data, set markers and infoWindow
+	    			EarthquakeController.findQuakes(strBounds,
+        				function(result, event){
+        					if(event.status){
+	        					var earthquakes = result;
+	        					var infowindow = new google.maps.InfoWindow(); 
+
+	        					if(j$(result).size()==0){
+        							j$('#noData').modal();
+        						}
+
+	        					j$.each(earthquakes, function(i, value){
+
+	        						var coord = new google.maps.LatLng(value.lat, value.lng);
+
+	        						console.log(value.lat + ',' + value.lng);
+	        						console.log(value.magnitude);
+
+									var marker = new google.maps.Circle({
+									    fillColor: '#FF5252',
+									    fillOpacity: (value.depth*4)/100,
+									    strokeColor: 'white',
+									    strokeWeight: .5,
+									    map: map,
+									    center: coord,
+									    radius: value.magnitude*value.magnitude*700
+								  	});
+
+		        					google.maps.event.addListener(marker, 'click', (function(marker, value) {
+								    	return function() {
+
+								    		map.setCenter(marker.getCenter());
+								    		addInfo(value, function(final_content){
+								    			infowindow.setContent(final_content);
+								    			infowindow.setPosition(marker.getCenter());
+								          		infowindow.open(map, marker);
+								    		});
+								    		
+								        }
+								    })(marker, value));
+		        					markers.push(marker);
+
+	        					});
+	        				}
+        				}, {escape:true});
+				});
+				//Call controller loadAllQuakes() function for initial instructions and top 10 data display
+				loadAllQuakes();
+        	});
+			
+			//Supporting JS Functions
+			/*Call controller allQuakes() with today's date.  Loop through results, add to popup, load popup*/
+			function loadAllQuakes(){
+				$today = j$.datepicker.formatDate('yy-mm-dd', new Date());
+				EarthquakeController.allQuakes($today,
+        				function(result, event){
+        					if(event.status){
+        						
+        						var earthquakes = result;
+        						clearMarkers();
+
+        						j$.each(earthquakes, function(i, value){
+        							addInfo(value, function(final_content){
+        								console.log(final_content);
+								    	j$('.quakeInfo').append(final_content);
+								    });
+
+        						});
+        					}
+        					j$('#infoModal').modal();
+        				},{escape:true});
+			}
+
+			//Clear map markers from previous search results
+			function clearMarkers() {
+  				j$.each(markers, function(i, value){
+					value.setMap(null);
+				});
+				markers = [];
+			}
+
+			//Format results to html for display
+			function addInfo(quake, callback){
+				var location = 'Location Unavailable';
+	        	var thisCoord = new google.maps.LatLng(quake.lat, quake.lng);
+	        	var info;
+
+				geocoder.geocode({'latLng': thisCoord}, function(results, status) {
+	        		if (status == google.maps.GeocoderStatus.OK) {
+	        			if(results[2] != null){
+	        				location = results[2].formatted_address;
+	        			}
+	        		}
+
+
+	        			info = '<div>' + 
+						   		'<h6><b>' + quake.quakeTime.substring(0,10) + '</b></h6>' +
+						   		'<b>' + location + '<b/><br/>' +
+						   		'<b>Magnitude: </b>' + quake.magnitude + '<br/>' +
+						   		'<b>Depth: </b>' + quake.depth +
+						   '</div';
+	        			callback(info);
+	        	});
+				
+
+			}
+        </script>
+	</head>
+	<nav class="navbar navbar-default navbar-custom" role="navigation">
+  		<div class="container-fluid">
+    		<div class="navbar-header">
+      			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+			        <span class="sr-only">Toggle navigation</span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+			        <span class="icon-bar"></span>
+      			</button>
+    		</div>
+
+	    	<div class="navbar-collapse collapse" id="bs-example-navbar-collapse-1" aria-expanded="false" style="height: 1px;">
+	      
+	        	<form class="navbar-form" role="search" id="searchBar">
+	        	<div class="form-group" style="display:inline;">
+				      	<div class="input-group" style="display:table;">
+				           	<span class="input-group-addon" style="width:1%;"><span class="glyphicon glyphicon-search"></span></span>
+				           	<input id="address" class="form-control" name="search" placeholder="Search" autcomplete="false" type="text"/>
+				       	</div>
+				    </div>
+        		</form>
+	    	</div>
+  		</div>
+	</nav>
+	<div id="map-canvas"></div>
+	<button type="button" class="btn btn-danger btn-circle btn-lg pull-right" data-toggle="modal" data-target="#infoModal"><i class="glyphicon glyphicon-cog"></i></button>
+	<div class="modal fade" role="dialog" id="infoModal" aria-labelledby="infoModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		        <h4 class="modal-title">Earthquake Information Utility</h4>
+		      </div>
+		      <div class="modal-body">
+		        <p>Recent earthquakes will appear on the map as red circles at the location entered in the search.  The circles are sized based on magnitude.  Deeper earthquakes will appear darker than others.  Clicking each marker shows the event date, location, magnitude, and depth. Below you will find a list of the 10 largest earthquakes that have occured in the past year.</p>
+		        <div class="quakeInfo">
+		        </div>
+		      </div>
+		    </div>
+		  </div>
+	</div>
+	<div class="modal fade" role="dialog" id="noData" aria-labelledby="infoModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		      </div>
+		      <div class="modal-body">
+		        <p>No earthquake data reported.</p>
+		      </div>
+		    </div>
+		  </div>
+	</div>
+
+</apex:page>
