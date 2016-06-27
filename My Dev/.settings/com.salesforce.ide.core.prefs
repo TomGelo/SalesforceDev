@@ -9,6 +9,10 @@ metadataFormatVersion=36.0
 namespacePrefix=
 packageName=unpackaged
 preferToolingDeployment=true
+<<<<<<< HEAD
 projectIdentifier=IDE-6265493359180822085
+=======
+projectIdentifier=IDE-1690011220165769142
+>>>>>>> refs/remotes/choose_remote_name/master
 readTimeout=400
 username=tom.gelo@gmail.com
