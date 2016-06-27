@@ -1,0 +1,168 @@
+<apex:page standardController="Event__c" extensions="addSessionsController">
+ 
+    <!-- Here we incldued the necessary jquery javascript and css files -->
+    <apex:includeScript value="{!URLFOR($Resource.jQuery, 'js/jquery-1.6.2.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jQuery, 'js/jquery-ui-1.8.16.custom.min.js')}"/>
+    
+    <apex:stylesheet value="{!URLFOR($Resource.jQuery, 'css/ui-lightness/jquery-ui-1.8.16.custom.css')}"/>
+ 
+   	<style>
+		#feedback { font-size: 1.4em; }
+		
+		#selectable .ui-selecting { background: #FECA40; }
+		#selectable .ui-selected { background: #F39814; color: white; }
+		#selectable .transparent { opacity: 0;}		
+		#selectable { list-style-type: none; margin: 0; padding: 0; }
+		#selectable li { margin: 2px; padding: 0px; float: left; width: 15px; height: 30px; font-size: 4em; text-align: center; }
+
+		
+		#hours td {width: 10em; text-align: center; font-weight:bold; border-bottom: 1px solid gray;}
+		#parent { width: 85%; text-align: center; overflow: hidden;} 
+		.child { display: inline-block;}
+} 		
+	</style>
+	<script>
+	var j$ = jQuery.noConflict();
+	var selectedTimes = [];
+	var startTimes = [];
+	var endTimes = [];
+	
+	 function createSession(startIndex, endIndex) {
+	 	
+	 	if(endIndex - startIndex > 1){
+	    	addSession(startIndex, endIndex);
+	    	if(selectedTimes.length>0){
+				j$( "#sessionSection" ).show();
+			}
+	    }
+	 }
+	
+	 j$(document).ready(function(){
+	 	j$( "#sessionSection" ).toggle();
+	 	for(var i = 0; i<37; i++){
+	 		j$("#selectable").append('<li class="ui-state-default"></li>');
+	 	}
+		j$( "#selectable" ).selectable({
+			autoRefresh: true,
+			stop: function() {
+				var result = j$( "#select-result" ).empty();
+				var iterator = 0;
+				var startIndex = 0;
+				var endIndex = 0;
+				var tempTimes = [];
+				var end = 0;
+				j$( ".ui-selected", this ).each(function() {
+					tempTimes.push(j$( "#selectable li" ).index( this ));
+				});
+				
+				j$.each(tempTimes, function() { 
+					
+					if(j$.inArray(parseInt(this), selectedTimes) != -1){
+						end = 1;
+					}
+					
+				});
+				
+				if(end == 0){
+					j$( ".ui-selected", this ).each(function() {
+						
+						var thisIndex = j$( "#selectable li" ).index( this );
+						
+						if(iterator==0){
+							startIndex = thisIndex;
+							startTimes.push(startIndex);
+							endIndex = (thisIndex) + j$( ".ui-selected").length - 1;
+							endTimes.push(endIndex);
+							iterator = 1;
+							if(endIndex-startIndex <= 1){
+								return false;
+							}
+						}
+						
+						if(((j$.inArray(thisIndex, startTimes) == -1) && (j$.inArray(thisIndex, endTimes) == -1)) ||
+						   ((j$.inArray(thisIndex, startTimes) != -1) && (j$.inArray(thisIndex, endTimes) != -1)) ||
+						   thisIndex < 2 || thisIndex > 34){
+
+							selectedTimes.push(j$( "#selectable li" ).index( this ));
+							j$(this).removeClass("ui-selected ui-selecting").addClass("transparent");
+						}
+					});
+					createSession(startIndex, endIndex);
+					
+				}
+				
+			}
+		});
+	});
+	</script>
+	
+	<apex:sectionHeader title="Event" subtitle="{!Event__c.Name}"/>
+	<apex:form >
+	<apex:pageMessages id="messages"/>
+		<apex:pageBlock >
+			<apex:pageBlockButtons >
+                <apex:commandButton action="{!sessionSave}" value="Save" reRender="messages"/>
+                <apex:commandButton action="{!goBack}" value="Cancel"/>
+            </apex:pageBlockButtons>	
+            <apex:pageBlockSection columns="2">
+            	<apex:outputField value="{!Event__c.Event_Date__c}"/>
+            	<apex:outputField value="{!Event__c.Capacity__c}"/>
+            	<apex:outputField value="{!Event__c.Venue__c}"/>
+            	<apex:pageBlockSectionItem >
+	            	<apex:outputLabel value="Total Seats" for="totalSeats"/>
+	            	<apex:outputText value="{!totalSeats}" id="totalSeats"/>	
+	            </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" title="Session Setup">
+            	<br/>
+            	<apex:outputText value="Please drag and select a start and end time for the Event Sessions. Sessions must be at least a half hour long."/>
+            <div id="parent">
+            	<br/>
+           		<table class="child" id="hours" border="0" width="838px" cellpadding="0" cellspacing="0">
+					<tr>
+						<td>8</td>
+						<td>9</td>
+						<td>10</td>
+						<td>11</td>
+						<td>12</td>
+						<td>1</td>
+						<td>2</td>
+						<td>3</td>
+						<td>4</td>
+						<td>5</td>
+					</tr>
+				</table>
+            <ol id="selectable" class="child">
+				
+			</ol>
+			</div>
+			<div id="parent">
+			 <ol id="chosen" class="child">
+				
+			</ol>
+			</div>
+			</apex:pageBlockSection>
+			<div id="sessionSection" >
+				<apex:pageBlockSection title="Sessions" columns="1">
+				<apex:actionFunction action="{!addSession}" name="addSession" rerender="sessionTable">
+					<apex:param name="startTime" value=""/>
+					<apex:param name="endTime" value=""/>
+				</apex:actionFunction>
+					<apex:pageBlockTable value="{!newSessions}" var="session" id="sessionTable">
+						<apex:column headerValue="Start Time" value="{!session.startTime}"/>
+						<apex:column headerValue="End Time" value="{!session.endTime}"/>
+						<apex:column headerValue="Session Name" >
+							<apex:inputText value="{!session.name}"/>
+						</apex:column>
+						<apex:column headerValue="Available Seats">
+							<apex:inputText value="{!session.capacity}">
+								<apex:actionSupport event="onchange" action="{!updateTotalSeats}" reRender="totalSeats, messages"/>
+							</apex:inputText>
+						</apex:column>
+					
+					</apex:pageBlockTable>
+				</apex:pageBlockSection>
+			</div>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>

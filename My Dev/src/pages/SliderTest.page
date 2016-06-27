@@ -1,0 +1,274 @@
+<apex:page id="page" sidebar="false" showHeader="false" standardStylesheets="false" controller="CalendarController">
+ 
+    <!-- Here we incldued the necessary jquery javascript and css files -->
+    <apex:includeScript value="{!URLFOR($Resource.fullcalendar, 'fullcalendar-1.5.1/jquery/jquery-1.5.1.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.fullcalendar, 'fullcalendar-1.5.1/jquery/jquery-ui-1.8.14.custom.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.fullcalendar, 'fullcalendar-1.5.1/fullcalendar/fullcalendar.min.js')}"/>
+ 	<apex:stylesheet value="{!URLFOR($Resource.fullcalendar, 'fullcalendar-1.5.1/fullcalendar/fullcalendar.css')}"/>
+ 	<apex:stylesheet value="{!URLFOR($Resource.fullcalendar, 'fullcalendar-1.5.1/demos/cupertino/theme.css')}"/>
+ 	
+    <script type="text/javascript">    
+        var j$ = jQuery.noConflict();
+   
+        j$(document).ready(function() {
+ 
+        CalendarController.getContacts(function(result, event){
+        	if(event.status){
+        		var divArray = new Array();
+        		for(var i = 0; i < result.length; i++){
+        			
+        			var divTag = j$("<div class='external-event'>");
+					var eventObject = {
+							title: result[i].Name,
+							url: result[i].Id // use the element's text as the event title
+					};
+					
+					divTag.data('eventObject', eventObject);
+					divTag.draggable({
+							zIndex: 999,
+							revert: true,      // will cause the event to go back to its
+							revertDuration: 0  //  original position after the drag
+					});
+					divTag.html(result[i].Name);
+					
+					j$('.external-events').append(divTag);
+        		}
+        		
+        	}
+        	else alert(event.message);
+         }, {escape:true});
+         
+         
+		
+		/* initialize the calendar
+		-----------------------------------------------------------------*/
+		
+		j$('#calendar').fullCalendar({
+			header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,agendaWeek,agendaDay'
+			},
+			defaultView: 'agendaWeek',
+			eventClick: function(event) {if (event.url) return false;},
+			editable: true,
+			droppable: true, // this allows things to be dropped onto the calendar !!!
+			drop: function(date, allDay) { // this function is called when something is dropped
+				
+				
+				// retrieve the dropped element's stored Event Object
+				var originalEventObject = j$(this).data('eventObject');
+				
+				// we need to copy it, so that multiple events don't have a reference to the same object
+				var copiedEventObject = j$.extend({}, originalEventObject);
+				
+				// assign it the date that was reported
+				copiedEventObject.start = date;
+				
+				var i = date.getHours();
+				i = i + 6;
+				copiedEventObject.end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), i, date.getMinutes(), 0,0);
+				copiedEventObject.allDay = allDay;
+				
+				if(copiedEventObject.allDay == false){
+					
+					CalendarController.insertEvent(copiedEventObject.start, copiedEventObject.end, copiedEventObject.url, function(result, event){
+						if(event.status){
+							copiedEventObject.id = result;
+							// render the event on the calendar
+							// the last `true` argument determines if the event "sticks" (http://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
+							j$('#calendar').fullCalendar('renderEvent', copiedEventObject, false);
+							
+							// is the "remove after drop" checkbox checked?
+							if (j$('#drop-remove').is(':checked')) {
+								// if so, remove the element from the "Draggable Events" list
+								j$(this).remove();
+							}
+						}
+						else alert('FAILURE- '+ event.message);
+					 }, {escape:true});
+				}				
+			},
+			eventResize: function(event,dayDelta,minuteDelta,revertFunc){
+				eventChanged(event);
+			},
+			eventDrop: function(event,dayDelta,minuteDelta,revertFunc){
+				eventChanged(event);
+			},
+			eventRender: function(event, element){
+				var divClose = j$("<div id='trash' style='float:left;' class='ui-icon ui-icon-trash'></div>");
+				divClose.bind('click', function() {
+  					eventDelete(event);
+				});
+				element.append(divClose);
+			},
+			viewDisplay: function(view) {
+				getEvents(view);
+			}
+			
+		});
+		
+		
+		
+		
+		
+		
+	
+	}); 
+	function getEvents(view)
+	{
+		j$('#calendar').fullCalendar('removeEvents');
+		var events = [];
+		
+		if(view.name=='agendaWeek'){
+			var viewStart = new Date(view.visStart);
+			
+			var hours = viewStart.getHours();
+			hours = hours + 4;
+			var viewEnd = new Date(viewStart.getFullYear(), viewStart.getMonth(), viewStart.getDate(), hours, viewStart.getMinutes(), 0,0);
+			
+			for(var i = 0; i<7; i++){
+				var thisStartDate = new Date(viewStart.getFullYear(), viewStart.getMonth(), viewStart.getDate()+i, viewStart.getHours(), viewStart.getMinutes(), 0,0);
+				var thisEndDate = new Date(viewEnd.getFullYear(), viewEnd.getMonth(), viewEnd.getDate()+i, viewEnd.getHours(), viewEnd.getMinutes(), 0,0);
+
+				events.push({
+					title: 'Shift Day ' + i,
+					start: thisStartDate,
+					end: thisEndDate,
+					allDay: false,
+					editable: false
+				});
+			}
+		}
+		
+		CalendarController.getShifts(view.visStart, view.visEnd, function(result, event){
+				if(event.status){
+					
+					for(var i = 0; i < result.length; i++){
+						var newStart = new Date(result[i].Start__c);
+						var newEnd = new Date(result[i].End__c);
+
+						
+						events.push({
+							title: result[i].Employee__r.Name,
+							id: result[i].Id,
+							start: newStart,
+							end: newEnd,
+							allDay: false
+						});
+						
+						
+						
+					}
+					
+				j$('#calendar').fullCalendar('addEventSource', events);
+				
+				}else alert('FAILURE- '+ event.message);
+		},{escape:true});
+	}
+	
+	function eventChanged(event)
+	{
+		if(event.allDay == false){
+			CalendarController.updateEvent(event.start, event.end, event.id, function(result, event){
+				if(event.status==false){
+					alert('FAILURE- '+ event.message);
+				}
+			},{escape:true});
+		}
+	}
+	
+	function eventDelete(eventData)
+	{
+		if(eventData.allDay == false){
+		
+		CalendarController.deleteEvent(eventData.id, function(result, event){
+				if(event.status){
+					j$('#calendar').fullCalendar('removeEvents', eventData.id);
+				}
+				else alert('FAILURE- '+ event.message);
+			},{escape:true});
+		}
+	}
+
+</script>
+    
+	    <style type='text/css'>
+	
+		body {
+			margin-top: 40px;
+			text-align: center;
+			font-size: 14px;
+			font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+			}
+			
+		#wrap {
+			width: 1100px;
+			margin: 0 auto;
+			}
+			
+		#external-events {
+			float: left;
+			width: 150px;
+			padding: 0 10px;
+			border: 1px solid #ccc;
+			background: #eee;
+			text-align: left;
+			}
+			
+		#external-events h4 {
+			font-size: 16px;
+			margin-top: 0;
+			padding-top: 1em;
+			}
+			
+		.external-event { /* try to mimick the look of a real event */
+			margin: 10px 0;
+			padding: 2px 4px;
+			background: #3366CC;
+			color: #fff;
+			font-size: .85em;
+			cursor: pointer;
+			}
+			
+		#external-events p {
+			margin: 1.5em 0;
+			font-size: 11px;
+			color: #666;
+			}
+			
+		#external-events p input {
+			margin: 0;
+			vertical-align: middle;
+			}
+	
+		#calendar {
+			float: right;
+			width: 900px;
+			}
+		
+		#trash{
+		    position:absolute;
+		    top:0;
+		    right:0;
+		    z-index: 20;
+		}
+
+	</style>
+ 
+<div id='wrap'>
+
+<div id='external-events'>
+<h4>Draggable Events</h4>
+<div class ='external-events'></div>
+<p>
+<input type='checkbox' id='drop-remove' /> <label for='drop-remove'>remove after drop</label>
+
+</p>
+</div>
+
+<div id='calendar'></div>
+<div style='clear:both'></div>
+</div>
+ 
+</apex:page>
