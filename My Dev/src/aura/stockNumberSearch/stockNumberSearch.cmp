@@ -1,0 +1,14 @@
+<aura:component >
+    <aura:handler event="c:stockNumberSearchKeyChange" action="{!c.handleSearchKeyChange}"/>	
+	<div class="slds-form--stacked">
+        <div class="slds-form-element">
+  			<label class="slds-form-element__label" for="text-input-01">Stock #</label>
+  			<div class="slds-form-element__control">
+                <div class="slds-input-has-icon slds-input-has-icon--right">
+                    <c:svgIcon svgPath="/resource/slds213/assets/icons/standard-sprite/svg/symbols.svg#user" class="slds-hide slds-input__icon" aura:id="icon" category="standard" size="medium" name="user" />
+    				<ui:inputText aura:id="search" class="slds-input" placeholder="Placeholder Text" keyup="{!c.searchKeyChange}" updateOn="keyUp"/>
+                </div>
+               </div>
+		</div>
+    </div>
+</aura:component>

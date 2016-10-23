@@ -1,0 +1,6 @@
+<aura:component >
+    <aura:attribute name="_label" type="String" default="Search"/>
+    <aura:handler event="c:stockNumberSearchKeyChange" action="{!c.handleSearchKeyChange}"/>	
+	<button class="slds-button slds-button--brand" disabled="true">No Hold</button>
+    <button aura:id="stockSearchSubmit" class="slds-button slds-button--brand" onclick="{!c.searchKeyChange}">{!v._label}</button>
+</aura:component>

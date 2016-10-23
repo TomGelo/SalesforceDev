@@ -1,0 +1,12 @@
+<aura:component >
+    <li class="slds-list__item">
+        <div class="slds-tile slds-tile--board">
+            <p class="slds-tile__title slds-truncate"><a href="#">Cloudhub + Anypoint Connectors</a></p>
+            <div class="slds-tile__detail">
+                <p class="slds-text-heading--medium">$500,000</p>
+                <p class="slds-truncate"><a href="#">Company One</a></p>
+                <p class="slds-truncate">Closing 9/30/2015</p>
+            </div>
+        </div>
+    </li>
+</aura:component>

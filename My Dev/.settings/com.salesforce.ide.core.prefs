@@ -1,18 +1,17 @@
+=\=\=\=\=\=\=
+<<<<<<<=HEAD
+>>>>>>>=refs/remotes/choose_remote_name/master
 eclipse.preferences.version=1
-endpointApiVersion=36.0
+endpointApiVersion=37.0
 endpointEnvironment=Production/Developer Edition
 endpointServer=login.salesforce.com
 httpsProtocol=true
-ideVersion=36.0
+ideVersion=37.0
 keependpoint=false
-metadataFormatVersion=36.0
+metadataFormatVersion=37.0
 namespacePrefix=
 packageName=unpackaged
 preferToolingDeployment=true
-<<<<<<< HEAD
-projectIdentifier=IDE-6265493359180822085
-=======
 projectIdentifier=IDE-1690011220165769142
->>>>>>> refs/remotes/choose_remote_name/master
 readTimeout=400
 username=tom.gelo@gmail.com

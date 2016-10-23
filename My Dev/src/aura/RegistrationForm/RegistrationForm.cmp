@@ -1,0 +1,9 @@
+<aura:component implements="force:appHostable">
+	<ui:inputText label="First Name" aura:id="first" placeholder=""/>
+    <ui:inputText label="Last Name" aura:id="last" placeholder=""/>
+	<ui:inputPhone label="Phone Number" aura:id="phone" placeholder=""/>
+	<ui:inputSelect label="Salutation" aura:id="salutation">
+    	<ui:inputSelectOption text="Dr." label="Dr."/>
+    </ui:inputSelect>
+    <ui:button label="Submit" />
+</aura:component>

@@ -1,0 +1,10 @@
+<aura:component access="global" implements="force:appHostable,flexipage:availableForAllPageTypes">
+<aura:handler event="c:stockNumberSearchKeyChange" action="{!c.searchKeyChange}"/>	
+    <aura:attribute name="_label" type="String" default="Search"/>
+    <div class="slds-grid--vertical slds-grid--pull-padded slds-theme--shade">
+        <center><lightning:spinner aura:id="working" class="slds-hide" variant="brand" size="large"/></center>
+  		<div class="slds-p-vertical--small slds-size--1-of-1 slds-container--center slds-container--medium"><c:stockNumberSearch /></div>
+    	<div class="slds-hide slds-p-vertical--small slds-size--1-of-1 slds-container--center slds-container--medium" aura:id="stockDisplay"><c:stockNumberDisplay /></div>
+        <div class="slds-p-vertical--small slds-size--1-of-1 slds-container--center slds-container--medium"><c:stockNumberButtons /></div>
+    </div>
+</aura:component>

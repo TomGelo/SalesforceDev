@@ -1,0 +1,11 @@
+<aura:component implements="force:appHostable">
+	<aura:attribute name="DayOfTheWeek" type="String" default="Monday"/>
+    <aura:handler name="init" value="{!this}" action="{!c.myAction}"/>
+    <aura:if isTrue="{!v.DayOfTheWeek == Monday}">
+    
+    	<h1 class="headline">Today is Monday</h1>
+         <aura:set attribute="else">
+                Today is not {!v.DayOfTheWeek}
+            </aura:set>
+    </aura:if>
+</aura:component>

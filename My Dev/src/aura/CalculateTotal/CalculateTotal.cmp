@@ -1,0 +1,7 @@
+<aura:component >
+    <ui:inputNumber aura:id="inputOne"/>
+    <ui:inputNumber aura:id="inputTwo"/>
+    <ui:inputNumber aura:id="inputThree"/>
+    <ui:button label="change value" press="{!c.calculate}"/>
+    <ui:outputNumber aura:id="totalValue"/>
+</aura:component>
