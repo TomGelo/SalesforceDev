@@ -1,0 +1,18 @@
+<apex:page standardController="Event">
+    <apex:includeLightning />
+
+    <div id="lightning" />
+
+    <script>
+        var myHideTag = "true";
+        
+        $Lightning.use("c:InventoryHoldApp", function() {
+          $Lightning.createComponent("c:stockNumberDisplay",
+          { hideTag: myHideTag },
+          "lightning",
+          function(cmp) {
+            // do some stuff
+          });
+        });
+    </script>
+</apex:page>

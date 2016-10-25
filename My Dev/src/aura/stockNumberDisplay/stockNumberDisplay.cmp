@@ -1,5 +1,8 @@
 <aura:component >
-    <aura:handler event="c:stockNumberSearchKeyChange" action="{!c.searchKeyChange}"/>	
+    <aura:handler event="c:stockNumberSearchKeyChange" action="{!c.searchKeyChange}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="hideTag" type="String" default="false" />
+    
 	<div class="slds-media slds-nowrap slds-grid--pull-padded">
         <div class="slds-media__figure slds-p-horizontal--small slds-size--1-of-2 slds-medium-size--1-of-6 slds-large-size--4-of-12">
     		<img src="{!$Resource.usedCar}" class="slds-image--card slds-image__crop slds-image__crop--1x1" alt="Placeholder" />
@@ -15,7 +18,7 @@
             <h3><a href="../">view on carmax.com</a></h3>
   		</div>
     </div>
-    <div class="slds-form-element slds-m-top--medium">
+    <div aura:id="buyerTag" class="slds-form-element slds-m-top--medium">
       <div class="slds-form-element__control">
         <span class="slds-checkbox">
           <input type="checkbox" name="options" id="checkbox-308" checked="" />

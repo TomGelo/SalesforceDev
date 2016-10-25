@@ -518,6 +518,10 @@
         <apexPage>laszloTest</apexPage>
         <enabled>false</enabled>
     </pageAccesses>
+    <pageAccesses>
+        <apexPage>stockNumberDisplayPage</apexPage>
+        <enabled>false</enabled>
+    </pageAccesses>
     <userLicense>Salesforce</userLicense>
     <userPermissions>
         <enabled>true</enabled>
