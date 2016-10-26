@@ -1,18 +1,33 @@
 <apex:page standardController="Event">
     <apex:includeLightning />
-
+	<script type='text/javascript' src='/canvas/sdk/js/publisher.js'></script>
+	
     <div id="lightning" />
 
     <script>
         var myHideTag = "true";
+        var searchComponent;
         
         $Lightning.use("c:InventoryHoldApp", function() {
           $Lightning.createComponent("c:stockNumberDisplay",
           { hideTag: myHideTag },
           "lightning",
           function(cmp) {
-            // do some stuff
+            //assign componenet to js variable
+            searchComponent = cmp;
+            console.log(searchComponent.find("makeAndModel"));
           });
         });
+        
+        //leverage save in header
+        Sfdc.canvas.publisher.subscribe({name: "publisher.showPanel",onData:function(e) {
+                Sfdc.canvas.publisher.publish({name:"publisher.setValidForSubmit", payload:"true"});
+			}});
+        Sfdc.canvas.publisher.subscribe({ name: "publisher.post",
+        onData: function(e) {
+        	//get component variable to save record example
+            console.log(searchComponent.find("makeAndModel"));
+            Sfdc.canvas.publisher.publish({ name: "publisher.close",payload:{ refresh:"true" }});
+    	}}); 
     </script>
 </apex:page>
