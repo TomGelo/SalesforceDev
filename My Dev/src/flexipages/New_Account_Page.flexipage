@@ -103,7 +103,7 @@
     </flexiPageRegions>
     <flexiPageRegions>
         <componentInstances>
-            <componentName>runtime_sales_social:socialPanel</componentName>
+            <componentName>sfa:socialPanel</componentName>
         </componentInstances>
         <name>sidebar</name>
         <type>Region</type>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+<Profile xmlns="http://soap.sforce.com/2006/04/metadata">
     <classAccesses>
         <apexClass>AccountsController</apexClass>
         <enabled>false</enabled>
@@ -320,10 +320,22 @@
         <apexClass>hotelDealsController</apexClass>
         <enabled>false</enabled>
     </classAccesses>
-    <label>Test</label>
-    <userLicense>Salesforce</userLicense>
+    <custom>true</custom>
+    <userLicense>Guest</userLicense>
     <userPermissions>
         <enabled>true</enabled>
-        <name>AllowViewKnowledge</name>
+        <name>EnableNotifications</name>
     </userPermissions>
-</PermissionSet>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>SelectFilesFromSalesforce</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ShowCompanyNameAsUserBadge</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ViewAllUsers</name>
+    </userPermissions>
+</Profile>
